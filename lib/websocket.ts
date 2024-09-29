@@ -48,6 +48,10 @@ export class WebSocketServer extends GenericEventEmitter<DefaultServerEventTypes
   async connect() {
     this.server = serve(`:${this.port}`);
     for await (const req of this.server) {
+      if (req.headers.get("upgrade") != "websocket") {
+        return new Response(null, { status: 501 });
+      }
+
       const { conn, r: bufReader, w: bufWriter, headers } = req;
       try {
         const sock = await acceptWebSocket({
